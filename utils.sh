@@ -23,7 +23,7 @@ get_duration() {
   local media="$1"
 
   ffprobe -v quiet -show_entries format=duration \
-    -print_format json  "test.mkv" | jq -r ".format.duration"
+    -print_format json "$media" | jq -r ".format.duration"
 }
 
 has_pending_operations() {

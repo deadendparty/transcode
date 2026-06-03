@@ -33,7 +33,7 @@ transcode() {
   local media="$1"
   local output="$2"
 
-  update_json ".duration" "$(get_duration "$media" )" "$METADATA"
+  update_json ".duration" $(get_duration "$media") "$METADATA"
 
   # Get ordered flags for ffmpeg
   local ordered_flags
