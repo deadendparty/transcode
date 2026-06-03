@@ -51,14 +51,14 @@ show_progress() {
   stats_progress=$(get_stats)
   files_progress=$(get_files_progress)
 
-  # Select item -> Quit
-  # ESC         -> Reload
+  # Select item -> Reload
+  # ESC         -> Quit
   local menu
   menu=$(
     echo -e "${files_progress}\n${stats_progress}" |
       rofi -dmenu -i -p "Transcoding"
   )
-  [[ -z "$menu" ]] && show_progress
+  [[ -n "$menu" ]] && show_progress
 }
 
 show_progress
