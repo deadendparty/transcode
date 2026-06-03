@@ -38,9 +38,8 @@ get_stats() {
   progress=(
     "time ${pretty_time%*.}/${pretty_duration%*.} (${duration_percentage}%)"
     "frame ${stats[0]} (${stats[1]} fps)"
-    "birate ${stats[3]} (${size})" "at ${stats[10]#' '}"
+    "bitrate ${stats[3]} (${size})" "at ${stats[10]}"
   )
-
   printf "%s\n" "${progress[@]}"
 }
 
@@ -57,7 +56,7 @@ show_progress() {
   local menu
   menu=$(
     echo -e "${files_progress}\n${stats_progress}" |
-      dmenu -i -p "Transcoding"
+      rofi -dmenu -i -p "Transcoding"
   )
   [[ -z "$menu" ]] && show_progress
 }
