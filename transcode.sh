@@ -39,9 +39,12 @@ transcode() {
   local ordered_flags
   read -ra ordered_flags < <(build_ordered_flags "$media")
   [[ "${#ordered_flags}" -eq 0 ]] && return 1
+  read -ra decoding_flags <<< "$VIDEO_DECODING_FLAGS"
 
   ffmpeg -v quiet -hide_banner -nostdin -progress pipe:1 \
-    -i "$media" "${ordered_flags[@]}" "$output" | parse_progress
+    "${decoding_flags[@]}" -i "$media" \
+    "${ordered_flags[@]}" "$output" |
+    parse_progress
 
   # The file's been processed. Increase counter.
   local num_output_files
