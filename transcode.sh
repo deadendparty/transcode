@@ -3,7 +3,7 @@
 source ./utils.sh
 source ./flags.sh
 
-build_ordered_flags() {
+build_ordered_encoding_flags() {
   local media="$1"
 
   initialize_state
@@ -35,20 +35,18 @@ transcode() {
 
   update_json ".duration" $(get_duration "$media") "$METADATA"
 
-  # Get ordered flags for ffmpeg
-  local ordered_flags
-  read -ra ordered_flags < <(build_ordered_flags "$media")
-  [[ "${#ordered_flags}" -eq 0 ]] && return 1
+  local decoding_flags encoding_flags
+  read -ra encoding_flags < <(build_ordered_encoding_flags "$media")
+  [[ "${#encoding_flags}" -eq 0 ]] && return 1
   read -ra decoding_flags <<< "$VIDEO_DECODING_FLAGS"
 
   ffmpeg -v quiet -hide_banner -nostdin -progress pipe:1 \
     "${decoding_flags[@]}" -i "$media" \
-    "${ordered_flags[@]}" "$output" |
+    "${encoding_flags[@]}" "$output" |
     parse_progress
 
   # The file's been processed. Increase counter.
-  local num_output_files
-  num_output_files=$(jq -r ".num_output_files" "$METADATA")
+  local num_output_files=$(jq -r ".num_output_files" "$METADATA")
   ((num_output_files++))
   update_json ".num_output_files" "$num_output_files" "$METADATA"
 }
