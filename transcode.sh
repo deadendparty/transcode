@@ -21,8 +21,8 @@ build_ordered_encoding_flags() {
 
 transcode_file() {
     local media="$1"
-    local to_directory="$2"
-    local output=$(get_output_filename "$media" "$to_directory")
+    local destination="$2"
+    local output=$(get_output_filename "$media" "$destination")
 
     update_json ".duration" $(get_duration "$media") "$METADATA"
 
@@ -44,21 +44,21 @@ transcode_file() {
 
 transcode_directory() {
     local source_path="$1"
-    local to_directory="$2"
+    local destination="$2"
 
     readarray -t files < <(
         find "$source_path" -maxdepth 1 -type f 2>/dev/null | sort
     )
     update_json ".num_input_files" "${#files[@]}" "$METADATA"
-    for media in "${files[@]}"; do transcode_file "$media" "$to_directory"; done
+    for media in "${files[@]}"; do transcode_file "$media" "$destination"; done
 }
 
 [[ "$1" =~ ^(-h|--help|-help)$ ]] && { display_help; exit; }
 
 source_path=$(realpath -q "$1")
-to_directory=$(realpath -qm "$2" || echo "$PWD")
+destination=$(realpath -qm "$2" || echo "$PWD")
 
 initialize_metadata
-[[ -d "$source_path" ]] && transcode_directory "$source_path" "$to_directory"
-[[ -f "$source_path" ]] && transcode_file "$source_path" "$to_directory"
+[[ -d "$source_path" ]] && transcode_directory "$source_path" "$destination"
+[[ -f "$source_path" ]] && transcode_file "$source_path" "$destination"
 cleanup_metadata

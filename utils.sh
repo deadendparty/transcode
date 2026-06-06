@@ -146,15 +146,13 @@ get_stream_size() {
 
 get_output_filename() {
   local media="$1"
-  local to_directory="$2"
+  local destination="$2"
 
-  local filename title extension
-  filename=$(basename "$media")  # a/b/c.mkv -> c.mkv
-  title="${filename%.*}"
-  extension="${filename##*.}"
+  local filename=$(basename "$media")  # a/b/c.mkv -> c.mkv
+  local title="${filename%.*}"
+  local extension="${filename##*.}"
 
-  local format_name
-  format_name=$(
+  local format_name=$(
     ffprobe -v quiet -show_entries format=format_name \
     -print_format json  "$media" | jq -r ".format.format_name"
   )
@@ -163,19 +161,18 @@ get_output_filename() {
   fi
 
   # Add .transcode. if the output is going to where the input is
-  local media_dir
-  media_dir=$(dirname "$media")
+  local media_directory=$(dirname "$media")
 
-  if [[ "$to_directory" == "$media_dir" ]]; then
-    echo "${to_directory}/${title}.transcoded.${extension}"
+  if [[ "$destination" == "$media_directory" ]]; then
+    echo "${destination}/${title}.transcoded.${extension}"
   else
-    mkdir -p "$to_directory"
-    echo "${to_directory}/${title}.${extension}"
+    mkdir -p "$destination"
+    echo "${destination}/${title}.${extension}"
   fi
 }
 
 display_help() {
-  echo "Usage: $0 SOURCE DIRECTORY"
-  echo "   or: $0 SOURCE_DIRECTORY DIRECTORY"
-  echo "Transcodes SOURCE to DIRECTORY based on your config."
+  echo "Usage: $0 SOURCE_FILE DESTINATION"
+  echo "   or: $0 SOURCE_DIRECTORY DESTINATION"
+  echo "Transcodes SOURCE to DESTINATION based on your config."
 }
