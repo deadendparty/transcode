@@ -32,16 +32,17 @@ build_ordered_encoding_flags() {
     echo "${flags[@]}"
 }
 
-transcode() {
+transcode_file() {
     local media="$1"
-    local output="$2"
+    local to_directory="$2"
+    local output=$(get_output_filename "$media" "$to_directory")
 
     update_json ".duration" $(get_duration "$media") "$METADATA"
 
     local decoding_flags encoding_flags
     read -ra encoding_flags < <(build_ordered_encoding_flags "$media")
     [[ "${#encoding_flags}" -eq 0 ]] && return 1
-    read -ra decoding_flags <<<"$VIDEO_DECODING_FLAGS"
+    read -ra decoding_flags <<< "$VIDEO_DECODING_FLAGS"
 
     ffmpeg -v quiet -hide_banner -nostdin -progress pipe:1 \
         "${decoding_flags[@]}" -i "$media" \
@@ -54,19 +55,23 @@ transcode() {
     update_json ".num_output_files" "$num_output_files" "$METADATA"
 }
 
-[[ "$1" =~ ^(-h|--help|-help)$ ]] && display_help
+transcode_directory() {
+    local source_path="$1"
+    local to_directory="$2"
 
-media_path=$(realpath "$1" 2>/dev/null || echo "")
-to_directory=$(realpath -m "$2" 2>/dev/null || echo "$PWD")
+    readarray -t files < <(
+        find "$source_path" -maxdepth 1 -type f 2>/dev/null | sort
+    )
+    update_json ".num_input_files" "${#files[@]}" "$METADATA"
+    for media in "${files[@]}"; do transcode_file "$media" "$to_directory"; done
+}
+
+[[ "$1" =~ ^(-h|--help|-help)$ ]] && { display_help; exit; }
+
+source_path=$(realpath -q "$1")
+to_directory=$(realpath -m "$2" || echo "$PWD")
 
 initialize_metadata
-
-readarray -t files < <(find "$media_path" -maxdepth 1 -type f 2>/dev/null | sort)
-update_json ".num_input_files" "${#files[@]}" "$METADATA"
-
-for media in "${files[@]}"; do
-    output=$(get_output_filename "$media" "$to_directory")
-    transcode "$media" "$output"
-done
-
+[[ -d "$source_path" ]] && transcode_directory "$source_path" "$to_directory"
+[[ -f "$source_path" ]] && transcode_file "$source_path" "$to_directory"
 cleanup_metadata
