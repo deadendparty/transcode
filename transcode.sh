@@ -69,7 +69,7 @@ transcode_directory() {
 [[ "$1" =~ ^(-h|--help|-help)$ ]] && { display_help; exit; }
 
 source_path=$(realpath -q "$1")
-to_directory=$(realpath -m "$2" || echo "$PWD")
+to_directory=$(realpath -qm "$2" || echo "$PWD")
 
 initialize_metadata
 [[ -d "$source_path" ]] && transcode_directory "$source_path" "$to_directory"
