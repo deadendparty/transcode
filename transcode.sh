@@ -13,23 +13,10 @@ build_ordered_encoding_flags() {
     read -ra audio_flags < <(make_audio_flags "$media")
     read -ra subtitle_flags < <(make_subtitle_flags "$media")
 
-    has_pending_operations || {
-        cleanup_state
-        return
-    }
-
-    local flags=()
-
-    if is_burning_sub; then
-        read -ra video_flags < <(make_burning_sub_video_flags)
-        flags=("${subtitle_flags[@]}" "${video_flags[@]}" "${audio_flags[@]}")
-    else
-        flags=("${video_flags[@]}" "${audio_flags[@]}" "${subtitle_flags[@]}")
-    fi
-
     cleanup_state
 
-    echo "${flags[@]}"
+    has_pending_operations &&
+        echo "${video_flags[@]}" "${audio_flags[@]}" "${subtitle_flags[@]}"
 }
 
 transcode_file() {
