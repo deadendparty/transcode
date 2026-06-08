@@ -53,7 +53,7 @@ cleanup_metadata() {
 }
 
 is_valid_json() {
-  echo "$1" | jq -e . >/dev/null 2>&1
+  jq -e <<< "$1" >/dev/null 2>&1
 }
 
 update_json() {
@@ -76,8 +76,7 @@ update_json() {
 }
 
 next_from_shared_counter() {
-  local counter
-  counter=$(cat "$SHARED_COUNTER")
+  local counter=$(cat "$SHARED_COUNTER")
   ((counter++))
-  echo "$counter" | tee "$SHARED_COUNTER"
+  tee "$SHARED_COUNTER" <<< $counter
 }
