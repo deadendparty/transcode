@@ -13,10 +13,10 @@ build_ordered_encoding_flags() {
     read -ra audio_flags < <(make_audio_flags "$media")
     read -ra subtitle_flags < <(make_subtitle_flags "$media")
 
-    cleanup_state
-
     has_pending_operations &&
         echo "${video_flags[@]}" "${audio_flags[@]}" "${subtitle_flags[@]}"
+
+    cleanup_state
 }
 
 transcode_file() {
