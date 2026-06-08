@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+source ./state.sh
 source ./utils.sh
 source ./flags.sh
 

@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 source ./config.sh
+source ./state.sh
 source ./utils.sh
 
 make_audio_flags() {
