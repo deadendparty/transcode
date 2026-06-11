@@ -4,6 +4,14 @@ source ./config.sh
 source ./state.sh
 source ./utils.sh
 
+build_video_flags() {
+    jq --arg encode_flags "$VIDEO_ENCODING_FLAGS" \
+       --arg supported_codecs "$SUPPORTED_VIDEO_CODECS" \
+       --arg supported_profiles "$SUPPORTED_VIDEO_PROFILES" \
+       --argjson start_index $(jq -r '.counter' "$STATE") \
+       -f filters/video.jq
+}
+
 make_audio_flags() {
     local media="$1"
     local flags=()
@@ -25,13 +33,6 @@ make_audio_flags() {
     echo "${flags[*]}"
 }
 
-make_burning_sub_video_flags() {
-    local output_index=$(jq ".video.output_index" "$STATE")
-    local flags=("-c:${output_index}" "$VIDEO_ENCODING_FLAGS")
-
-    echo "${flags[*]}"
-}
-
 make_overlay_filter_flags() {
     local subtitle_index="$1"
 
@@ -43,37 +44,6 @@ make_overlay_filter_flags() {
         -map "[v]"
     )
     echo "${overlay_filter_flags[@]}"
-}
-
-make_video_flags() {
-    local media="$1"
-    local stream
-
-    while IFS= read -r stream; do
-        local codec=$(jq -r ".codec_name" <<<"$stream")
-
-        # Skip covers
-        match_attribute "$codec" "$UNSUPPORTED_COVERS" && continue
-
-        local index=$(jq -r ".index" <<<"$stream")
-        local profile=$(jq -r ".profile" <<<"$stream")
-        local shared_counter=$(next_from_shared_counter)
-
-        # It's needed when burning subs, whether transcoding video or not.
-        update_json ".video.input_index" "$index" "$STATE"
-        update_json ".video.output_index" "$shared_counter" "$STATE"
-
-        if match_attribute "$codec" "$SUPPORTED_VIDEO_CODECS" &&
-            match_attribute "$profile" "$SUPPORTED_VIDEO_PROFILES"; then
-            echo "-map 0:${index} -c:${shared_counter} copy"
-        else
-            echo "-map 0:${index} -c:${shared_counter} ${VIDEO_ENCODING_FLAGS}"
-            update_json ".transcoding.video" true "$STATE"
-        fi
-
-        # Skip any extra video stream or cover
-        return
-    done < <(list_streams_by_type "$media" "v")
 }
 
 group_subs_by_format() {
