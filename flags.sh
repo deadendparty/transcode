@@ -25,3 +25,15 @@ build_subtitle_flags() {
        --argjson start_index $(jq -r '.counter' "$STATE") \
        -f filters/subtitle.jq
 }
+
+process_flags_metadata() {
+    read -rd '' JSON
+
+    counter=$(jq -r '.counter' <<< "$JSON")
+    update_json ".counter" $counter "$STATE"
+
+    transcode=$(jq -r '.transcode' <<< "$JSON")
+    [[ $transcode == true ]] && update_json ".transcode" $transcode "$STATE"
+
+    jq -r '.flags.[]' <<< "$JSON"
+}
