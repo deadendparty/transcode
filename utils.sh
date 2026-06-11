@@ -34,7 +34,7 @@ list_streams_by_type() {
     local stream_type="$2"  # a: audio, v: video, s: subtitle
 
     ffprobe -v quiet -show_streams -select_streams "$stream_type" \
-        -print_format json "$media" | jq -c ".streams[]"
+        -print_format json "$media" | jq -c ".streams"
 }
 
 get_stream_size() {
