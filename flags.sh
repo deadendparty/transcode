@@ -12,25 +12,11 @@ build_video_flags() {
        -f filters/video.jq
 }
 
-make_audio_flags() {
-    local media="$1"
-    local flags=()
-    local stream
-
-    while IFS= read -r stream; do
-        local index=$(jq -r ".index" <<<"$stream")
-        local codec=$(jq -r ".codec_name" <<<"$stream")
-        local shared_counter=$(next_from_shared_counter)
-
-        if match_attribute "$codec" "$SUPPORTED_AUDIO_CODECS"; then
-            flags+=("-map 0:${index} -c:${shared_counter} copy")
-        else
-            flags+=("-map 0:${index} -c:${shared_counter} ${AUDIO_ENCODING_FLAGS}")
-            update_json ".transcoding.audio" true "$STATE"
-        fi
-    done < <(list_streams_by_type "$media" "a")
-
-    echo "${flags[*]}"
+build_audio_flags() {
+    jq --arg encode_flags "$AUDIO_ENCODING_FLAGS" \
+       --arg supported_codecs "$SUPPORTED_AUDIO_CODECS" \
+       --argjson start_index $(jq -r '.counter' "$STATE") \
+       -f filters/audio.jq
 }
 
 make_overlay_filter_flags() {
