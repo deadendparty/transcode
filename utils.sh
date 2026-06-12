@@ -18,44 +18,12 @@ match_attribute() {
     [[ "$attribute" =~ $regex ]] && return 0 || return 1
 }
 
-select_stream_by_index() {
-    local media="$1"
-    local index="$2"
-
-    local matching_streams=$(
-        ffprobe -v quiet -show_streams -select_streams \
-            "$index" -print_format json "$media"
-    )
-    jq -c ".streams[]" <<< "$matching_streams"
-}
-
 list_streams_by_type() {
     local media="$1"
     local stream_type="$2"  # a: audio, v: video, s: subtitle
 
     ffprobe -v quiet -show_streams -select_streams "$stream_type" \
         -print_format json "$media" | jq -c ".streams"
-}
-
-get_stream_size() {
-    local media="$1"
-    local index="$2"
-
-    # Check for size in the stream's metadata
-    local stream=$(select_stream_by_index "$media" "$index")
-    local size=$(
-        echo "$stream" | jq -r ".tags" |
-            grep -i -Po '".*byte.*": "\d+"' |
-            grep -Po '(?<=: ")\d+'
-    )
-
-    [[ -n "$size" ]] && { echo "$size"; return; }
-
-    # Calculate the size
-    ffmpeg -nostdin -v quiet -i "$media" -map 0:"$index" \
-        -c copy "$TEMP_IMAGE_SUBTITLE_FILE"
-    stat -c %s "$TEMP_IMAGE_SUBTITLE_FILE"
-    rm "$TEMP_IMAGE_SUBTITLE_FILE"
 }
 
 get_output_filename() {

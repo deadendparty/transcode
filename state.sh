@@ -22,23 +22,17 @@ has_pending_operations() {
     [[ $(jq '.transcode' "$STATE") == true ]] && return 0 || return 1
 }
 
-is_burning_sub() {
-    [[ $(jq ".is_burning_sub" "$STATE") == true ]] && return 0 || return 1
-}
-
 initialize_metadata() {
     cp "default_metadata.json" "$METADATA"
 }
 
 initialize_state() {
     cp "default_state.json" "$STATE"
-    echo -1 >"$SHARED_COUNTER"
 }
 
 cleanup_state() {
     [[ -f "$STATE" ]] && rm "$STATE"
     [[ -f "$PROGRESS" ]] && rm "$PROGRESS"
-    [[ -f "$SHARED_COUNTER" ]] && rm "$SHARED_COUNTER"
 }
 
 cleanup_metadata() {
@@ -64,10 +58,4 @@ update_json() {
     local new_json=$(jq "$argtype" value "$value" "($key) = \$value" "$json")
 
     echo "$new_json" > "$json"
-}
-
-next_from_shared_counter() {
-    local counter=$(cat "$SHARED_COUNTER")
-    ((counter++))
-    tee "$SHARED_COUNTER" <<<$counter
 }
