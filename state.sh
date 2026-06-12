@@ -19,13 +19,7 @@ parse_progress() {
 }
 
 has_pending_operations() {
-    if [[ $(jq ".transcoding.video" "$STATE") == false ]] &&
-        [[ $(jq ".transcoding.audio" "$STATE") == false ]] &&
-        [[ $(jq ".transcoding.subtitle" "$STATE") == false ]]; then
-        return 1
-    else
-        return 0
-    fi
+    [[ $(jq '.transcode' "$STATE") == true ]] && return 0 || return 1
 }
 
 is_burning_sub() {
