@@ -38,3 +38,30 @@ process_flags_metadata() {
 
     jq -r '.flags.[]' <<< "$JSON"
 }
+
+build_ordered_encoding_flags() {
+    local media="$1"
+
+    initialize_state
+
+    local video_flags=$(
+        list_streams_by_type "$media" v |
+        build_video_flags |
+        process_flags_metadata
+    )
+    local audio_flags=$(
+        list_streams_by_type "$media" a |
+        build_audio_flags |
+        process_flags_metadata
+    )
+    local subtitle_flags=$(
+        list_streams_by_type "$media" s |
+        build_subtitle_flags |
+        process_flags_metadata
+    )
+
+    has_pending_operations &&
+        echo "${video_flags[@]}" "${audio_flags[@]}" "${subtitle_flags[@]}"
+
+    cleanup_state
+}
