@@ -3,7 +3,7 @@ reduce .[] as $s (
         
     if (($s.codec_name | test($supported_codecs)) and
        ($s.profile | test("^\($supported_profiles)$" ))) then
-        .flags += [ "-map 0:\($s.index) -c:\(.counter) -copy" ] |
+        .flags += [ "-map 0:\($s.index) -c:\(.counter) copy" ] |
         .counter += 1
     elif $s.codec_name | test ("mjpeg") then 
         .transcode = true
