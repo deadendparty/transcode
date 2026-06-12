@@ -9,10 +9,21 @@ build_ordered_encoding_flags() {
 
     initialize_state
 
-    local video_flags audio_flags subtitle_flags
-    read -ra video_flags < <(make_video_flags "$media")
-    read -ra audio_flags < <(make_audio_flags "$media")
-    read -ra subtitle_flags < <(make_subtitle_flags "$media")
+    local video_flags=$(
+        list_streams_by_type "$media" v |
+        build_video_flags |
+        process_flags_metadata
+    )
+    local audio_flags=$(
+        list_streams_by_type "$media" a |
+        build_audio_flags |
+        process_flags_metadata
+    )
+    local subtitle_flags=$(
+        list_streams_by_type "$media" s |
+        build_subtitle_flags |
+        process_flags_metadata
+    )
 
     has_pending_operations &&
         echo "${video_flags[@]}" "${audio_flags[@]}" "${subtitle_flags[@]}"
