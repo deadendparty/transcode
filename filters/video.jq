@@ -5,7 +5,7 @@ reduce .[] as $s (
        ($s.profile | test("^\($supported_profiles)$" ))) then
         .flags += [ "-map 0:\($s.index) -c:\(.counter) copy" ] |
         .counter += 1
-    elif $s.codec_name | test ("mjpeg") then 
+    elif $s.codec_name | test ($unsupported_covers) then
         .transcode = true
     else 
         .flags += [ "-map 0:\($s.index) -c:\(.counter) \($encode_flags)" ] |

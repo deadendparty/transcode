@@ -8,6 +8,7 @@ build_video_flags() {
     jq --arg encode_flags "$VIDEO_ENCODING_FLAGS" \
        --arg supported_codecs "$SUPPORTED_VIDEO_CODECS" \
        --arg supported_profiles "$SUPPORTED_VIDEO_PROFILES" \
+       --arg unsupported_covers "$UNSUPPORTED_COVERS" \
        --argjson start_index $(jq -r '.counter' "$STATE") \
        -f filters/video.jq
 }
